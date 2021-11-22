@@ -23,7 +23,7 @@ jobs:
         run: bash ./gradlew build --stacktrace
   test:
     name: Test
-    needs: [ setup ]
+    needs: [ setup, build ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
