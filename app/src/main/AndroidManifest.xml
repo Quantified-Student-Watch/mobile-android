@@ -21,7 +21,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.QsWatch">
-
+        <activity
+            android:name=".activity.BluetoothPairActivity"
+            android:exported="false" />
         <activity
             android:name=".activity.MainActivity"
             android:exported="true">
