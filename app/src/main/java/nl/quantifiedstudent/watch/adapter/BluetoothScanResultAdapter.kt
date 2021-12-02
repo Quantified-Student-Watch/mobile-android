@@ -19,7 +19,6 @@ class BluetoothScanResultAdapter(
     override fun getItemCount() = items.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        println("add")
         holder.bind(items[position])
     }
 
