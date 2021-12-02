@@ -2,8 +2,7 @@ package nl.quantifiedstudent.watch.activity
 
 import android.Manifest
 import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
+import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
@@ -41,16 +40,20 @@ class BluetoothPairActivity : AppCompatActivity() {
 
     private val bluetoothScanResultAdapter: BluetoothScanResultAdapter by lazy {
         BluetoothScanResultAdapter(bluetoothScanResults) { device ->
-            if (device != null) {
-                //TODO: Start pair process
-                Log.i("BluetoothScanResultCallback", "Pair with ${device.name}")
+            if (device == null) return@BluetoothScanResultAdapter
+
+            bluetoothLowEnergyScanner.stopScan(bluetoothScanCallback)
+
+            with(device) {
+                Log.i("BluetoothScanResultCallback", "Pair with $name")
+                connectGatt(this@BluetoothPairActivity, false, bluetoothGattCallback)
             }
         }
     }
 
     private val bluetoothScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
-            val index = bluetoothScanResults.indexOfFirst {it.device.address == result.device.address }
+            val index = bluetoothScanResults.indexOfFirst { it.device.address == result.device.address }
             if (index != -1) {
                 bluetoothScanResults[index] = result
                 bluetoothScanResultAdapter.notifyItemChanged(index)
@@ -61,6 +64,35 @@ class BluetoothPairActivity : AppCompatActivity() {
 
                 bluetoothScanResults.add(result)
                 bluetoothScanResultAdapter.notifyItemInserted(bluetoothScanResults.size - 1)
+            }
+        }
+    }
+
+    private val bluetoothGattCallback = object : BluetoothGattCallback() {
+        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+            val deviceAddress = gatt.device.address
+
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    Log.w("BluetoothGattCallback", "Successfully connected to $deviceAddress")
+                    // TODO: Store a reference to BluetoothGatt
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    Log.w("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
+                    gatt.close()
+                }
+            } else {
+                Log.w("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
+                gatt.close()
+            }
+        }
+
+        override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+            with(characteristic) {
+                when (status) {
+                    BluetoothGatt.GATT_SUCCESS -> Log.i("BluetoothGattCallback", "Read characteristic $uuid:\n${value.contentToString()}")
+                    BluetoothGatt.GATT_READ_NOT_PERMITTED -> Log.e("BluetoothGattCallback", "Read not permitted for $uuid!")
+                    else -> Log.e("BluetoothGattCallback", "Characteristic read failed for $uuid, error: $status")
+                }
             }
         }
     }
