@@ -7,8 +7,8 @@ interface Crc {
         data: ByteArray,
         offset: Int,
         length: Int,
-        refIn: Boolean,
-        refOut: Boolean,
-        xorOut: Int
+        refIn: Boolean = false,
+        refOut: Boolean = false,
+        xorOut: Int = 0
     ): Int
 }
