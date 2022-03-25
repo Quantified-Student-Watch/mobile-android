@@ -25,6 +25,7 @@ import nl.quantifiedstudent.watch.extensions.toHexString
 import nl.quantifiedstudent.watch.protocol.huawei.HuaweiDeviceService
 import nl.quantifiedstudent.watch.protocol.huawei.HuaweiHandshakeService
 
+@ExperimentalUnsignedTypes
 @SuppressLint("MissingPermission", "TODO")
 class BluetoothPairActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBluetoothPairBinding
@@ -47,7 +48,6 @@ class BluetoothPairActivity : AppCompatActivity() {
     private val bluetoothScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
     private val bluetoothScanResults = mutableListOf<ScanResult>()
 
-    @ExperimentalUnsignedTypes
     private val bluetoothScanResultAdapter: BluetoothScanResultAdapter by lazy {
         BluetoothScanResultAdapter(bluetoothScanResults) { device ->
             if (device == null) return@BluetoothScanResultAdapter
@@ -77,7 +77,6 @@ class BluetoothPairActivity : AppCompatActivity() {
     }
 
     // TODO: Move GATT callback to Huawei protocol
-    @ExperimentalUnsignedTypes
     private val bluetoothGattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             val deviceAddress = gatt.device.address
@@ -134,7 +133,6 @@ class BluetoothPairActivity : AppCompatActivity() {
         }
     }
 
-    @ExperimentalUnsignedTypes
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
