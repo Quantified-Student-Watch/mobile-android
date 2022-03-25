@@ -5,6 +5,7 @@ import nl.quantifiedstudent.watch.protocol.ProtocolCommand
 import nl.quantifiedstudent.watch.protocol.checksum.Crc
 import nl.quantifiedstudent.watch.protocol.checksum.Crc16
 
+@Deprecated("Belongs to legacy protocol architecture")
 class E66CommunicationProtocol : CommunicationProtocol {
     private val checksum: Crc = Crc16()
 

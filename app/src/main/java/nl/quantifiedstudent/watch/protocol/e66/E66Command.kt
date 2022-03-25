@@ -2,6 +2,7 @@ package nl.quantifiedstudent.watch.protocol.e66
 
 import nl.quantifiedstudent.watch.protocol.ProtocolCommand
 
+@Deprecated("Belongs to legacy protocol architecture")
 enum class E66Command constructor(
     override var bytes: ByteArray,
     override var parameterCount: Int
