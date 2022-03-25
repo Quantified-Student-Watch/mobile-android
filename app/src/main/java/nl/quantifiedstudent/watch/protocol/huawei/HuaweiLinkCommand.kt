@@ -5,6 +5,10 @@ data class HuaweiLinkCommand(
     var commandId: Byte,
     var tlvs: Array<HuaweiLinkCommandTLV>
 ) {
+    fun getTlv(tag: Byte): HuaweiLinkCommandTLV {
+        return tlvs.first { tlv -> tlv.tag == tag }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
