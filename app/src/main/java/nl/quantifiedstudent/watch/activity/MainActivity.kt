@@ -7,6 +7,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.quantifiedstudent.watch.R
 
 @AndroidEntryPoint
+@ExperimentalUnsignedTypes
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

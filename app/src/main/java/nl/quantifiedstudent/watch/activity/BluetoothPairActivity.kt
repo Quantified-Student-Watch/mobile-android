@@ -1,9 +1,11 @@
 package nl.quantifiedstudent.watch.activity
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
@@ -19,9 +21,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import nl.quantifiedstudent.watch.adapter.BluetoothScanResultAdapter
 import nl.quantifiedstudent.watch.databinding.ActivityBluetoothPairBinding
+import nl.quantifiedstudent.watch.extensions.toHexString
+import nl.quantifiedstudent.watch.protocol.huawei.HuaweiDeviceService
+import nl.quantifiedstudent.watch.protocol.huawei.HuaweiHandshakeService
 
+@SuppressLint("MissingPermission", "TODO")
 class BluetoothPairActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBluetoothPairBinding
+
+    private lateinit var deviceService: HuaweiDeviceService
+    private lateinit var handshakeService: HuaweiHandshakeService
 
     private val bluetoothAdapter: BluetoothAdapter by lazy {
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -38,6 +47,7 @@ class BluetoothPairActivity : AppCompatActivity() {
     private val bluetoothScanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
     private val bluetoothScanResults = mutableListOf<ScanResult>()
 
+    @ExperimentalUnsignedTypes
     private val bluetoothScanResultAdapter: BluetoothScanResultAdapter by lazy {
         BluetoothScanResultAdapter(bluetoothScanResults) { device ->
             if (device == null) return@BluetoothScanResultAdapter
@@ -58,9 +68,7 @@ class BluetoothPairActivity : AppCompatActivity() {
                 bluetoothScanResults[index] = result
                 bluetoothScanResultAdapter.notifyItemChanged(index)
             } else {
-                with(result.device) {
-                    Log.i("BluetoothScanCallback", "Found BLE device! Name: ${name ?: "Unnamed"}, address: $address")
-                }
+                Log.i("BluetoothScanCallback", "Device, Name: ${result.device.name ?: "Unnamed"}, address: ${result.device.address}")
 
                 bluetoothScanResults.add(result)
                 bluetoothScanResultAdapter.notifyItemInserted(bluetoothScanResults.size - 1)
@@ -68,35 +76,65 @@ class BluetoothPairActivity : AppCompatActivity() {
         }
     }
 
+    // TODO: Move GATT callback to Huawei protocol
+    @ExperimentalUnsignedTypes
     private val bluetoothGattCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             val deviceAddress = gatt.device.address
 
+            bluetoothLowEnergyScanner.stopScan(bluetoothScanCallback)
+
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Log.w("BluetoothGattCallback", "Successfully connected to $deviceAddress")
-                    // TODO: Store a reference to BluetoothGatt
+                    Log.i("BluetoothGattCallback", "Successfully connected to $deviceAddress")
+                    Log.i("BluetoothGattCallback", "Service discovery: ${gatt.discoverServices()}")
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.w("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
+                    Log.i("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
                     gatt.close()
                 }
             } else {
-                Log.w("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
+                Log.i("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
                 gatt.close()
             }
         }
 
-        override fun onCharacteristicRead(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
-            with(characteristic) {
+        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+            if (gatt == null) {
+                return;
+            }
+
+            deviceService = HuaweiDeviceService(bluetoothAdapter, gatt)
+            deviceService.enableNotification()
+        }
+
+        override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
+            if (descriptor == null) {
+                return
+            }
+
+            with(descriptor) {
                 when (status) {
-                    BluetoothGatt.GATT_SUCCESS -> Log.i("BluetoothGattCallback", "Read characteristic $uuid:\n${value.contentToString()}")
+                    BluetoothGatt.GATT_SUCCESS -> Log.i("BluetoothGattCallback", "Write descriptor $uuid: ${value.toHexString()}")
                     BluetoothGatt.GATT_READ_NOT_PERMITTED -> Log.e("BluetoothGattCallback", "Read not permitted for $uuid!")
-                    else -> Log.e("BluetoothGattCallback", "Characteristic read failed for $uuid, error: $status")
+                    else -> Log.e("BluetoothGattCallback", "Descriptor read failed for $uuid, error: $status")
                 }
+            }
+
+            handshakeService = HuaweiHandshakeService(deviceService)
+            handshakeService.startHandshake()
+        }
+
+        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            with(characteristic) {
+                Log.i("BluetoothGattCallback", "Characteristic $uuid changed | value: ${value.toHexString()}")
+
+                val packet = deviceService.readPacket(value)
+                handshakeService.handlePacket(packet)
             }
         }
     }
 
+    @ExperimentalUnsignedTypes
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,7 +175,16 @@ class BluetoothPairActivity : AppCompatActivity() {
         if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) return
         if (grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED) return finishAffinity()
 
-        bluetoothLowEnergyScanner.startScan(null, bluetoothScanSettings, bluetoothScanCallback)
+        // TODO: Currently filters on Huawei manufacturer and model
+        val filter = ScanFilter.Builder()
+            .setManufacturerData(637, byteArrayOf(1, 3, 0, -1, -1))
+            .build()
+
+        bluetoothLowEnergyScanner.startScan(
+            listOf(filter),
+            bluetoothScanSettings,
+            bluetoothScanCallback
+        )
     }
 
     private fun launchBluetoothActivity() {
