@@ -1,5 +1,6 @@
 package nl.quantifiedstudent.watch.adapter
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
 import android.view.LayoutInflater
@@ -26,6 +27,7 @@ class BluetoothScanResultAdapter(
         private val binding: BluetoothScanResultRowItemBinding,
         private val onClickListener: ((device: BluetoothDevice?) -> Unit)
     ) : RecyclerView.ViewHolder(binding.root) {
+        @SuppressLint("MissingPermission", "TODO")
         fun bind(result: ScanResult) {
             binding.deviceName.text = result.device.name ?: "Unknown"
             binding.macAddress.text = result.device.address
