@@ -2,7 +2,6 @@ package nl.quantifiedstudent.watch.protocol.huawei
 
 data class HuaweiLinkCommandTLV(
     var tag: Byte,
-    val length: Int,
     var value: ByteArray = byteArrayOf()
 ) {
     override fun equals(other: Any?): Boolean {
