@@ -1,9 +1,9 @@
 package nl.quantifiedstudent.watch.protocol.huawei
 
 data class HuaweiLinkCommand(
-    var serviceId: Byte,
-    var commandId: Byte,
-    var tlvs: Array<HuaweiLinkCommandTLV>
+    val serviceId: Byte,
+    val commandId: Byte,
+    val tlvs: Array<HuaweiLinkCommandTLV>
 ) {
     fun getTlv(tag: Byte): HuaweiLinkCommandTLV {
         return tlvs.first { tlv -> tlv.tag == tag }
