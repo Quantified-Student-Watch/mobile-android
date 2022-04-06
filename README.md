@@ -10,6 +10,26 @@ The communication is setup with the help from an Android application, of which t
 This application handles the communication with a compatible smartwatch, which means it can request the mentioned data from the smartwatch.
 That being said, the application acts as the middleman between the smartwatch and data collection endpoint.
 
+## Features
+
+### Multi-protocol
+
+An architecture is set in place to support multiple communication protocols, which allows for scalability when introducing new protocols.
+This means that more protocols can be added more easily to the application, which results in an increased number of students that can use the platform.
+
+## Compatibility
+
+### Huawei
+
+The application implements version 2 of the Huawei Link protocol, of which documentation can be found in the [Wiki](https://github.com/quantified-student/smartwatch-mobile-android/wiki).
+This means that the application is technically able to support all Huawei smartwatches which make use of this protocol.
+However, to ensure reliability with the application, only tested Huawei smartwatches are considered compatible.
+This list currently consists of the following smartwatches:
+
+- Huawei Band 6
+
+Please note that it is possible to skip this compatibility check for development or beta purposes.
+
 ## Setup
 
 ### Development environment
@@ -28,9 +48,8 @@ git clone https://github.com/quantified-student/smartwatch-mobile-android.git
 ## Build
 
 The project uses [Gradle](https://docs.gradle.org/current/userguide/what_is_gradle.html) for handling dependencies and other building processes.
-To build the source code, ensure that the root directory is active, then proceed by executing the following command:
+To build the source code, ensure that the root directory is open, then execute the following command:
 
 ```
 ./gradlew build
 ```
-
