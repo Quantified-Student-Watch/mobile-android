@@ -113,13 +113,14 @@ class BluetoothPairActivity : AppCompatActivity() {
         if (requestCode != ACCESS_FINE_LOCATION_REQUEST_CODE) return
         if (grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED) return finishAffinity()
 
-        // TODO: Currently filters on Huawei manufacturer and model
-        val filter = ScanFilter.Builder()
-            .setManufacturerData(637, byteArrayOf(1, 3, 0, -1, -1))
-            .build()
+        startScanner()
+    }
+
+    private fun startScanner() {
+        val filters = CompatiblePeripheral.buildScanFilters()
 
         bluetoothLowEnergyScanner.startScan(
-            listOf(filter),
+            filters,
             bluetoothScanSettings,
             bluetoothScanCallback
         )
