@@ -6,31 +6,35 @@ import nl.quantifiedstudent.watch.protocol.crypto.AES
 import nl.quantifiedstudent.watch.protocol.crypto.HMacSha256
 import java.security.SecureRandom
 
-class HuaweiHandshakeService(private val deviceService: HuaweiDeviceService) {
+@ExperimentalUnsignedTypes
+class HuaweiLinkDeviceConfigService(
+    private val protocol: HuaweiLinkBluetoothProtocol
+) : HuaweiLinkService {
     private val aes = AES()
-    private val deviceKey = DeviceKey()
     private val hMacSha256 = HMacSha256()
+    private val deviceKey = DeviceKey()
 
     private lateinit var authVersion: ByteArray
     private lateinit var localNonce: ByteArray
     private lateinit var deviceNonce: ByteArray
 
-    fun startHandshake() {
-        deviceService.sendPacket(INIT_PACKET)
-    }
+    override val serviceId: Byte = 1
 
-    @ExperimentalUnsignedTypes
-    fun handlePacket(packet: HuaweiLinkPacket) {
+    override fun handlePacket(packet: HuaweiLinkPacket) {
         if (packet.command.serviceId.toInt() != 1) {
             Log.i("HuaweiHandshakeService", "Unknown service id ${packet.command.serviceId}")
         } else {
             when (packet.command.commandId.toInt()) {
                 1 -> requestAuthentication(packet.command)
                 19 -> requestBondParameters(packet.command)
-                15 -> requestBond(packet.command)
+                15 -> requestBond()
                 else -> Log.i("HuaweiHandshakeService", "Unknown command id ${packet.command.commandId}")
             }
         }
+    }
+
+    fun requestLinkParams() {
+        protocol.sendPacket(INIT_PACKET)
     }
 
     private fun requestAuthentication(command: HuaweiLinkCommand) {
@@ -51,7 +55,7 @@ class HuaweiHandshakeService(private val deviceService: HuaweiDeviceService) {
             )
         )
 
-        deviceService.sendPacket(requestAuthPacket)
+        protocol.sendPacket(requestAuthPacket)
     }
 
     private fun requestBondParameters(command: HuaweiLinkCommand) {
@@ -60,7 +64,7 @@ class HuaweiHandshakeService(private val deviceService: HuaweiDeviceService) {
 
         Log.i("HuaweiHandshakeService", "Expected: ${expected.toHexString()}, Response: ${response.toHexString()}")
 
-        val localMac = deviceService.localMac
+        val localMac = protocol.localMac
         val localSerial = localMac.replace(":", "").take(6)
 
         val requestBondParameters = HuaweiLinkPacket(
@@ -76,12 +80,11 @@ class HuaweiHandshakeService(private val deviceService: HuaweiDeviceService) {
             )
         )
 
-        deviceService.sendPacket(requestBondParameters)
+        protocol.sendPacket(requestBondParameters)
     }
 
-    @ExperimentalUnsignedTypes
-    private fun requestBond(command: HuaweiLinkCommand) {
-        val localSerial = deviceService.localMac.replace(":", "").take(6)
+    private fun requestBond() {
+        val localSerial = protocol.localMac.replace(":", "").take(6)
         val iv = aes.computeInitializationVector(1)
 
         val requestBond = HuaweiLinkPacket(
@@ -90,14 +93,14 @@ class HuaweiHandshakeService(private val deviceService: HuaweiDeviceService) {
                     HuaweiLinkCommandTLV(1),
                     HuaweiLinkCommandTLV(3, byteArrayOf(0)),
                     HuaweiLinkCommandTLV(5, localSerial.encodeToByteArray()),
-                    HuaweiLinkCommandTLV(6, createBondingKey(deviceService.deviceMac, byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9), iv)),
+                    HuaweiLinkCommandTLV(6, createBondingKey(protocol.deviceMac, byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9), iv)),
                     HuaweiLinkCommandTLV(7, iv),
                     HuaweiLinkCommandTLV(9, "Quantified Student".encodeToByteArray()),
                 )
             )
         )
 
-        deviceService.sendPacket(requestBond)
+        protocol.sendPacket(requestBond)
     }
 
     @ExperimentalUnsignedTypes
