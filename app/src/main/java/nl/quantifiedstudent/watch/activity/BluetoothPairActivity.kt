@@ -30,9 +30,6 @@ import nl.quantifiedstudent.watch.protocol.huawei.HuaweiHandshakeService
 class BluetoothPairActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBluetoothPairBinding
 
-    private lateinit var deviceService: HuaweiDeviceService
-    private lateinit var handshakeService: HuaweiHandshakeService
-
     private val bluetoothAdapter: BluetoothAdapter by lazy {
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothManager.adapter
@@ -72,63 +69,6 @@ class BluetoothPairActivity : AppCompatActivity() {
 
                 bluetoothScanResults.add(result)
                 bluetoothScanResultAdapter.notifyItemInserted(bluetoothScanResults.size - 1)
-            }
-        }
-    }
-
-    // TODO: Move GATT callback to Huawei protocol
-    private val bluetoothGattCallback = object : BluetoothGattCallback() {
-        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-            val deviceAddress = gatt.device.address
-
-            bluetoothLowEnergyScanner.stopScan(bluetoothScanCallback)
-
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Log.i("BluetoothGattCallback", "Successfully connected to $deviceAddress")
-                    Log.i("BluetoothGattCallback", "Service discovery: ${gatt.discoverServices()}")
-                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.i("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
-                    gatt.close()
-                }
-            } else {
-                Log.i("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
-                gatt.close()
-            }
-        }
-
-        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-            if (gatt == null) {
-                return;
-            }
-
-            deviceService = HuaweiDeviceService(bluetoothAdapter, gatt)
-            deviceService.enableNotification()
-        }
-
-        override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
-            if (descriptor == null) {
-                return
-            }
-
-            with(descriptor) {
-                when (status) {
-                    BluetoothGatt.GATT_SUCCESS -> Log.i("BluetoothGattCallback", "Write descriptor $uuid: ${value.toHexString()}")
-                    BluetoothGatt.GATT_READ_NOT_PERMITTED -> Log.e("BluetoothGattCallback", "Read not permitted for $uuid!")
-                    else -> Log.e("BluetoothGattCallback", "Descriptor read failed for $uuid, error: $status")
-                }
-            }
-
-            handshakeService = HuaweiHandshakeService(deviceService)
-            handshakeService.startHandshake()
-        }
-
-        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
-            with(characteristic) {
-                Log.i("BluetoothGattCallback", "Characteristic $uuid changed | value: ${value.toHexString()}")
-
-                val packet = deviceService.readPacket(value)
-                handshakeService.handlePacket(packet)
             }
         }
     }
