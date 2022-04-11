@@ -141,7 +141,7 @@ class BluetoothPairActivity : AppCompatActivity() {
 
         requestPermissions(
             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-            LOCATION_PERMISSION_REQUEST_CODE
+            ACCESS_FINE_LOCATION_REQUEST_CODE
         )
 
         binding.bluetoothScanResultRecyclerView.apply {
@@ -170,7 +170,7 @@ class BluetoothPairActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) return
+        if (requestCode != ACCESS_FINE_LOCATION_REQUEST_CODE) return
         if (grantResults.isEmpty() || grantResults[0] == PackageManager.PERMISSION_DENIED) return finishAffinity()
 
         // TODO: Currently filters on Huawei manufacturer and model
@@ -191,6 +191,6 @@ class BluetoothPairActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val LOCATION_PERMISSION_REQUEST_CODE = 2
+        private const val ACCESS_FINE_LOCATION_REQUEST_CODE = 2
     }
 }
