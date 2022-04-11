@@ -1,28 +1,37 @@
 package nl.quantifiedstudent.watch.protocol.huawei
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.util.Log
 import nl.quantifiedstudent.watch.extensions.array
 import nl.quantifiedstudent.watch.extensions.toHexString
+import nl.quantifiedstudent.watch.protocol.BluetoothProtocol
+import nl.quantifiedstudent.watch.protocol.CompatiblePeripheral
 import nl.quantifiedstudent.watch.protocol.huawei.converters.HuaweiLinkPacketBinaryConverter
 import java.nio.ByteBuffer
 import java.util.*
 
 @SuppressLint("MissingPermission", "TODO")
-class HuaweiDeviceService(private val bluetoothAdapter: BluetoothAdapter, private val gatt: BluetoothGatt) {
+@ExperimentalUnsignedTypes
+class HuaweiLinkBluetoothProtocol : BluetoothProtocol() {
     private val converter = HuaweiLinkPacketBinaryConverter()
+    private val services = HuaweiLinkServiceCollection()
 
-    @SuppressLint("HardwareIds")
-    val localMac: String = bluetoothAdapter.address
-    val deviceMac: String = gatt.device.address
+    val localMac: String = "02:00:00:00:00:00"
+    lateinit var deviceMac: String
 
-    @SuppressLint("MissingPermission", "TODO")
-    fun enableNotification() {
-        val service = gatt.getService(COMMAND_SERVICE_UUID)
+    override val compatibility: Array<CompatiblePeripheral> = arrayOf(
+        CompatiblePeripheral.HUAWEI_BAND_6
+    )
+
+    override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+        super.onServicesDiscovered(gatt, status)
+
+        deviceMac = gatt?.device?.address.toString()
+
+        val service = gatt?.getService(COMMAND_SERVICE_UUID)
         val characteristic = service?.getCharacteristic(COMMAND_READ_CHARACTERISTIC_UUID)
         val descriptor = characteristic?.getDescriptor(COMMAND_READ_DESCRIPTOR_UUID)
 
@@ -35,31 +44,46 @@ class HuaweiDeviceService(private val bluetoothAdapter: BluetoothAdapter, privat
         }
     }
 
-    fun readPacket(bytes: ByteArray): HuaweiLinkPacket {
-        val localBuffer = ByteBuffer.wrap(bytes)
-        return converter.read(HuaweiLinkPacket::class.java, localBuffer)
+    override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
+        super.onDescriptorWrite(gatt, descriptor, status)
+    }
+
+    override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+        with(characteristic) {
+            Log.i("HuaweiLinkBluetoothProtocol", "Characteristic $uuid changed, new value is: ${value.toHexString()}")
+            handlePacket(value)
+        }
+    }
+
+    override fun handlePacket(data: ByteArray) {
+        val localBuffer = ByteBuffer.wrap(data)
+        val packet = converter.read(HuaweiLinkPacket::class.java, localBuffer)
+
+        val service = services.determineService(packet.command.serviceId)
+
+        if (service != null) {
+            service.handlePacket(packet)
+        } else {
+            Log.i("HuaweiLinkBluetoothProtocol", "Unable to handle service with id ${packet.command.serviceId}")
+        }
     }
 
     fun sendPacket(packet: HuaweiLinkPacket) {
         val buffer = ByteBuffer.allocate(1024)
-
         converter.write(packet, buffer)
 
         sendPacket(buffer.array(buffer.position()))
-
-        buffer.position(0)
     }
 
-    @SuppressLint("MissingPermission", "TODO")
-    fun sendPacket(bytes: ByteArray) {
+    override fun sendPacket(data: ByteArray) {
         val service = gatt.getService(COMMAND_SERVICE_UUID)
         val characteristic = service?.getCharacteristic(COMMAND_WRITE_CHARACTERISTIC_UUID)
 
-        Log.i("HuaweiDeviceService", "Sending message: ${bytes.toHexString()}")
+        Log.i("HuaweiLinkBluetoothProtocol", "Sending message: ${data.toHexString()}")
 
         characteristic?.let {
             it.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-            it.value = bytes
+            it.value = data
             gatt.writeCharacteristic(it)
         }
     }
