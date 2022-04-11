@@ -49,8 +49,8 @@ class BluetoothPairActivity : AppCompatActivity() {
     private val bluetoothScanResults = mutableListOf<ScanResult>()
 
     private val bluetoothScanResultAdapter: BluetoothScanResultAdapter by lazy {
-        BluetoothScanResultAdapter(bluetoothScanResults) { device ->
-            if (device == null) return@BluetoothScanResultAdapter
+        BluetoothScanResultAdapter(bluetoothScanResults) { device, record ->
+            if (device == null || record == null) return@BluetoothScanResultAdapter
 
             bluetoothLowEnergyScanner.stopScan(bluetoothScanCallback)
 

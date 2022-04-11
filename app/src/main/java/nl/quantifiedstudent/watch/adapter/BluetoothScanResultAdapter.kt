@@ -2,6 +2,7 @@ package nl.quantifiedstudent.watch.adapter
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanRecord
 import android.bluetooth.le.ScanResult
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,7 +11,7 @@ import nl.quantifiedstudent.watch.databinding.BluetoothScanResultRowItemBinding
 
 class BluetoothScanResultAdapter(
     private val items: List<ScanResult>,
-    private val onClick: ((device: BluetoothDevice?) -> Unit)
+    private val onClick: ((device: BluetoothDevice?, record: ScanRecord?) -> Unit)
 ) : RecyclerView.Adapter<BluetoothScanResultAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = BluetoothScanResultRowItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -25,14 +26,14 @@ class BluetoothScanResultAdapter(
 
     inner class ViewHolder(
         private val binding: BluetoothScanResultRowItemBinding,
-        private val onClickListener: ((device: BluetoothDevice?) -> Unit)
+        private val onClickListener: (device: BluetoothDevice?, record: ScanRecord?) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("MissingPermission", "TODO")
         fun bind(result: ScanResult) {
             binding.deviceName.text = result.device.name ?: "Unknown"
             binding.macAddress.text = result.device.address
             binding.signalStrength.text = "${result.rssi} dBm"
-            binding.root.setOnClickListener { onClickListener.invoke(result.device) }
+            binding.root.setOnClickListener { onClickListener.invoke(result.device, result.scanRecord) }
         }
     }
 }
