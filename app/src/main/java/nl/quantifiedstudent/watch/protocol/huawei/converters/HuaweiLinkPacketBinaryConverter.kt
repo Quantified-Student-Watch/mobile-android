@@ -12,7 +12,7 @@ class HuaweiLinkPacketBinaryConverter : BinaryConverter<HuaweiLinkPacket>() {
 
     override fun read(clazz: Class<HuaweiLinkPacket>, buffer: ByteBuffer): HuaweiLinkPacket {
         buffer.position(1)
-        val length = buffer.getShort(1)
+        val length = buffer.short
         buffer.position(4)
 
         val command = commandConverter.read(HuaweiLinkCommand::class.java, buffer)
