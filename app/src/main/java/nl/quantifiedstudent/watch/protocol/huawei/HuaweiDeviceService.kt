@@ -14,7 +14,6 @@ import java.util.*
 
 @SuppressLint("MissingPermission", "TODO")
 class HuaweiDeviceService(private val bluetoothAdapter: BluetoothAdapter, private val gatt: BluetoothGatt) {
-    private val buffer = ByteBuffer.allocate(1024)
     private val converter = HuaweiLinkPacketBinaryConverter()
 
     @SuppressLint("HardwareIds")
@@ -42,6 +41,8 @@ class HuaweiDeviceService(private val bluetoothAdapter: BluetoothAdapter, privat
     }
 
     fun sendPacket(packet: HuaweiLinkPacket) {
+        val buffer = ByteBuffer.allocate(1024)
+
         converter.write(packet, buffer)
 
         sendPacket(buffer.array(buffer.position()))
