@@ -17,7 +17,7 @@ import java.util.*
 @ExperimentalUnsignedTypes
 class HuaweiLinkBluetoothProtocol : BluetoothProtocol() {
     private val converter = HuaweiLinkPacketBinaryConverter()
-    private val services = HuaweiLinkServiceCollection()
+    private val services = HuaweiLinkServiceCollection(arrayOf(HuaweiLinkDeviceConfigService(this)))
 
     val localMac: String = "02:00:00:00:00:00"
     lateinit var deviceMac: String
@@ -46,6 +46,8 @@ class HuaweiLinkBluetoothProtocol : BluetoothProtocol() {
 
     override fun onDescriptorWrite(gatt: BluetoothGatt?, descriptor: BluetoothGattDescriptor?, status: Int) {
         super.onDescriptorWrite(gatt, descriptor, status)
+
+        services.getService<HuaweiLinkDeviceConfigService>().requestLinkParams()
     }
 
     override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
