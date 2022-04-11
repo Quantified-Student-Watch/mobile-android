@@ -3,9 +3,9 @@ package nl.quantifiedstudent.watch.activity
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
@@ -19,15 +19,20 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import nl.quantifiedstudent.watch.adapter.BluetoothScanResultAdapter
 import nl.quantifiedstudent.watch.databinding.ActivityBluetoothPairBinding
-import nl.quantifiedstudent.watch.extensions.toHexString
-import nl.quantifiedstudent.watch.protocol.huawei.HuaweiDeviceService
-import nl.quantifiedstudent.watch.protocol.huawei.HuaweiHandshakeService
+import nl.quantifiedstudent.watch.protocol.BluetoothProtocolCollection
+import nl.quantifiedstudent.watch.protocol.CompatiblePeripheral
+import javax.inject.Inject
 
 @ExperimentalUnsignedTypes
 @SuppressLint("MissingPermission", "TODO")
+@AndroidEntryPoint
 class BluetoothPairActivity : AppCompatActivity() {
+    @Inject
+    lateinit var protocolCollection: BluetoothProtocolCollection
+
     private lateinit var binding: ActivityBluetoothPairBinding
 
     private val bluetoothAdapter: BluetoothAdapter by lazy {
@@ -51,9 +56,11 @@ class BluetoothPairActivity : AppCompatActivity() {
 
             bluetoothLowEnergyScanner.stopScan(bluetoothScanCallback)
 
+            val protocol = protocolCollection.determineProtocol(record.manufacturerSpecificData)
+
             with(device) {
-                Log.i("BluetoothScanResultCallback", "Pair with $name")
-                connectGatt(this@BluetoothPairActivity, false, bluetoothGattCallback)
+                Log.i("BluetoothScanResultCallback", "Connecting with device $name")
+                connectGatt(this@BluetoothPairActivity, false, protocol)
             }
         }
     }
