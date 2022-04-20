@@ -11,6 +11,8 @@ import nl.quantifiedstudent.watch.protocol.huawei.HuaweiLinkBluetoothProtocol
 @InstallIn(SingletonComponent::class)
 @ExperimentalUnsignedTypes
 class BluetoothModule {
+
+    // When new protocols are introduced, add them in the list below
     @Provides
     fun provideBluetoothProtocolCollection(): BluetoothProtocolCollection = BluetoothProtocolCollection(
         listOf(
