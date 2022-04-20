@@ -7,8 +7,8 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.util.Log
 import nl.quantifiedstudent.watch.extensions.array
 import nl.quantifiedstudent.watch.extensions.toHexString
-import nl.quantifiedstudent.watch.protocol.BluetoothProtocol
-import nl.quantifiedstudent.watch.protocol.CompatiblePeripheral
+import nl.quantifiedstudent.watch.protocol.AbstractBluetoothProtocol
+import nl.quantifiedstudent.watch.protocol.PeripheralType
 import nl.quantifiedstudent.watch.protocol.huawei.converters.HuaweiLinkPacketBinaryConverter
 import java.nio.ByteBuffer
 import java.util.*

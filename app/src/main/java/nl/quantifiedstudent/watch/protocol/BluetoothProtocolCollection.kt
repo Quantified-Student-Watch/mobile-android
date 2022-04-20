@@ -1,5 +1,6 @@
 package nl.quantifiedstudent.watch.protocol
 
+import android.bluetooth.le.ScanFilter
 import android.util.SparseArray
 import androidx.core.util.containsKey
 
@@ -15,6 +16,12 @@ class BluetoothProtocolCollection(
             }
 
             peripheral != null
+        }
+    }
+
+    fun buildScanFilters(): List<ScanFilter> {
+        return protocols.flatMap { protocol ->
+            protocol.createScanFilters()
         }
     }
 }

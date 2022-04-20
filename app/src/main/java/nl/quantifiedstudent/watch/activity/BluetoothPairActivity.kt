@@ -23,7 +23,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import nl.quantifiedstudent.watch.adapter.BluetoothScanResultAdapter
 import nl.quantifiedstudent.watch.databinding.ActivityBluetoothPairBinding
 import nl.quantifiedstudent.watch.protocol.BluetoothProtocolCollection
-import nl.quantifiedstudent.watch.protocol.CompatiblePeripheral
 import javax.inject.Inject
 
 @ExperimentalUnsignedTypes
@@ -124,7 +123,7 @@ class BluetoothPairActivity : AppCompatActivity() {
     }
 
     private fun startScanner() {
-        val filters = CompatiblePeripheral.buildScanFilters()
+        val filters = protocolCollection.buildScanFilters()
 
         bluetoothLowEnergyScanner.startScan(
             filters,
