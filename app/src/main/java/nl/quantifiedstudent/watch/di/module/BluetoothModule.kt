@@ -5,7 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import nl.quantifiedstudent.watch.protocol.BluetoothProtocolCollection
-import nl.quantifiedstudent.watch.protocol.SupportedBluetoothProtocol
+import nl.quantifiedstudent.watch.protocol.huawei.HuaweiLinkBluetoothProtocol
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -13,6 +13,8 @@ import nl.quantifiedstudent.watch.protocol.SupportedBluetoothProtocol
 class BluetoothModule {
     @Provides
     fun provideBluetoothProtocolCollection(): BluetoothProtocolCollection = BluetoothProtocolCollection(
-        SupportedBluetoothProtocol.values().map { it.protocol }.toTypedArray()
+        listOf(
+            HuaweiLinkBluetoothProtocol()
+        )
     )
 }
