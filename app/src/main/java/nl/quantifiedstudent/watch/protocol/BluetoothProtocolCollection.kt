@@ -9,8 +9,8 @@ class BluetoothProtocolCollection(
 ) {
     fun determineProtocol(manufacturerSpecificData: SparseArray<ByteArray>): AbstractBluetoothProtocol? {
         return protocols.firstOrNull { protocol ->
-            val compatiblePeripherals = protocol.compatibility
-            val peripheral = compatiblePeripherals.firstOrNull { peripheral ->
+            val peripherals = protocol.compatiblePeripherals
+            val peripheral = peripherals.firstOrNull { peripheral ->
                 manufacturerSpecificData.containsKey(peripheral.manufacturerId)
                 manufacturerSpecificData[peripheral.manufacturerId].contentEquals(peripheral.manufacturerData)
             }

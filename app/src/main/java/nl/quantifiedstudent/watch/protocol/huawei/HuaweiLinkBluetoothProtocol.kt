@@ -22,8 +22,8 @@ class HuaweiLinkBluetoothProtocol : AbstractBluetoothProtocol() {
     val localMac: String = "02:00:00:00:00:00"
     lateinit var deviceMac: String
 
-    override val compatibility: Array<CompatiblePeripheral> = arrayOf(
-        CompatiblePeripheral.HUAWEI_BAND_6
+    override val compatiblePeripherals: Collection<PeripheralType> = listOf(
+        PeripheralType.HUAWEI_BAND_6
     )
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
