@@ -15,7 +15,7 @@ import java.util.*
 
 @SuppressLint("MissingPermission", "TODO")
 @ExperimentalUnsignedTypes
-class HuaweiLinkBluetoothProtocol : BluetoothProtocol() {
+class HuaweiLinkBluetoothProtocol : AbstractBluetoothProtocol() {
     private val converter = HuaweiLinkPacketBinaryConverter()
     private val services = HuaweiLinkServiceCollection(arrayOf(HuaweiLinkDeviceConfigService(this)))
 

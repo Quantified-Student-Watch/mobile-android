@@ -4,7 +4,8 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 
-abstract class BluetoothProtocol : DefaultBluetoothGattCallback() {
+abstract class AbstractBluetoothProtocol : DefaultBluetoothGattCallback() {
+
     protected lateinit var gatt: BluetoothGatt
 
     @SuppressLint("MissingPermission")
