@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -57,9 +58,11 @@ class BluetoothPairActivity : AppCompatActivity() {
 
             val protocol = protocolCollection.determineProtocol(record.manufacturerSpecificData)
 
-            with(device) {
-                Log.i("BluetoothScanResultCallback", "Connecting with device $name")
-                connectGatt(this@BluetoothPairActivity, false, protocol)
+            if (protocol is BluetoothGattCallback) {
+                Log.i("BluetoothScanResultCallback", "Connecting with device ${device.name}")
+                device.connectGatt(this@BluetoothPairActivity, false, protocol)
+            } else {
+                Log.e("BluetoothScanResultCallback", "Unable to connect with device ${device.name}")
             }
         }
     }

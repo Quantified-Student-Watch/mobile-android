@@ -5,11 +5,11 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.le.ScanFilter
 
-abstract class AbstractBluetoothProtocol : DefaultBluetoothGattCallback() {
+abstract class AbstractBluetoothProtocol : DefaultBluetoothGattCallback(), BluetoothProtocol {
 
     protected lateinit var gatt: BluetoothGatt
 
-    abstract val compatiblePeripherals: Collection<PeripheralType>
+    abstract override val compatiblePeripherals: Collection<PeripheralType>
 
     @SuppressLint("MissingPermission")
     fun isGattConnected(): Boolean {
@@ -22,15 +22,15 @@ abstract class AbstractBluetoothProtocol : DefaultBluetoothGattCallback() {
         this.gatt = gatt
     }
 
-    fun createScanFilters(): Collection<ScanFilter> {
+    abstract override fun handlePacket(data: ByteArray)
+
+    abstract override fun sendPacket(data: ByteArray)
+
+    override fun createScanFilters(): Collection<ScanFilter> {
         return compatiblePeripherals.map { peripheral ->
             ScanFilter.Builder()
                 .setManufacturerData(peripheral.manufacturerId, peripheral.manufacturerData)
                 .build()
         }
     }
-
-    abstract fun handlePacket(data: ByteArray)
-
-    abstract fun sendPacket(data: ByteArray)
 }
