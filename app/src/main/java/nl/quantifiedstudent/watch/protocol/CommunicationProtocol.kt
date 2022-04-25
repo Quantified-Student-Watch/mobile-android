@@ -1,6 +1,6 @@
 package nl.quantifiedstudent.watch.protocol
 
-@Deprecated("Belongs to legacy protocol architecture")
+@ExperimentalUnsignedTypes
 interface CommunicationProtocol {
-    fun prepareMessage(command: ProtocolCommand, data: ByteArray = byteArrayOf()): ByteArray
+    fun prepareMessage(command: ProtocolCommand, data: UByteArray = ubyteArrayOf()): UByteArray
 }

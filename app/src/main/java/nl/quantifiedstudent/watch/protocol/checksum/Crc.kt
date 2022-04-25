@@ -1,14 +1,15 @@
 package nl.quantifiedstudent.watch.protocol.checksum
 
+@ExperimentalUnsignedTypes
 interface Crc {
-    fun calculate(
-        poly: Int,
-        init: Int,
-        data: ByteArray,
+   fun calculate(
+        poly: UInt,
+        init: UInt,
+        data: UByteArray,
         offset: Int,
         length: Int,
-        refIn: Boolean = false,
-        refOut: Boolean = false,
-        xorOut: Int = 0
-    ): Int
+        refIn: Boolean,
+        refOut: Boolean,
+        xorOut: UInt
+    ): UInt
 }

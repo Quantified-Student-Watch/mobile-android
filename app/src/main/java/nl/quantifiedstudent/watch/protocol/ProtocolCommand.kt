@@ -1,7 +1,7 @@
 package nl.quantifiedstudent.watch.protocol
 
-@Deprecated("Belongs to legacy protocol architecture")
+@ExperimentalUnsignedTypes
 interface ProtocolCommand {
-    var bytes: ByteArray
+    var bytes: UByteArray
     var parameterCount: Int
 }
