@@ -5,7 +5,7 @@ import android.util.SparseArray
 import androidx.core.util.containsKey
 
 class BluetoothProtocolCollection(
-    private val protocols: Collection<BluetoothProtocol> = emptyList()
+    private val protocols: Collection<BluetoothProtocol>
 ) {
     fun determineProtocol(manufacturerSpecificData: SparseArray<ByteArray>): BluetoothProtocol? {
         return protocols.firstOrNull { protocol ->
