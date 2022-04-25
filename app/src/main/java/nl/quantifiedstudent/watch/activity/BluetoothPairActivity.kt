@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import nl.quantifiedstudent.watch.adapter.BluetoothScanResultAdapter
 import nl.quantifiedstudent.watch.databinding.ActivityBluetoothPairBinding
+import nl.quantifiedstudent.watch.extensions.toMap
 import nl.quantifiedstudent.watch.protocol.BluetoothProtocolCollection
 import javax.inject.Inject
 
@@ -56,7 +57,8 @@ class BluetoothPairActivity : AppCompatActivity() {
 
             bluetoothLowEnergyScanner.stopScan(bluetoothScanCallback)
 
-            val protocol = protocolCollection.determineProtocol(record.manufacturerSpecificData)
+            val manufacturerSpecificData = record.manufacturerSpecificData.toMap()
+            val protocol = protocolCollection.determineProtocol(manufacturerSpecificData)
 
             if (protocol is BluetoothGattCallback) {
                 Log.i("BluetoothScanResultCallback", "Connecting with device ${device.name}")

@@ -1,13 +1,11 @@
 package nl.quantifiedstudent.watch.protocol
 
 import android.bluetooth.le.ScanFilter
-import android.util.SparseArray
-import androidx.core.util.containsKey
 
 class BluetoothProtocolCollection(
     private val protocols: Collection<BluetoothProtocol>
 ) {
-    fun determineProtocol(manufacturerSpecificData: SparseArray<ByteArray>): BluetoothProtocol? {
+    fun determineProtocol(manufacturerSpecificData: Map<Int, ByteArray>): BluetoothProtocol? {
         return protocols.firstOrNull { protocol ->
             val peripherals = protocol.compatiblePeripherals
             val peripheral = peripherals.firstOrNull { peripheral ->
