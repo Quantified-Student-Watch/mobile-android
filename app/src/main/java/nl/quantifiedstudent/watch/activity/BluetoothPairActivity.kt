@@ -52,19 +52,19 @@ class BluetoothPairActivity : AppCompatActivity() {
     private val bluetoothScanResults = mutableListOf<ScanResult>()
 
     private val bluetoothScanResultAdapter: BluetoothScanResultAdapter by lazy {
-        BluetoothScanResultAdapter(bluetoothScanResults) { device, record ->
-            if (device == null || record == null) return@BluetoothScanResultAdapter
+        BluetoothScanResultAdapter(bluetoothScanResults) { bluetoothDevice, scanRecord ->
+            if (bluetoothDevice == null || scanRecord == null) return@BluetoothScanResultAdapter
 
             bluetoothLowEnergyScanner.stopScan(bluetoothScanCallback)
 
-            val manufacturerSpecificData = record.manufacturerSpecificData.toMap()
+            val manufacturerSpecificData = scanRecord.manufacturerSpecificData.toMap()
             val protocol = protocolCollection.determineProtocol(manufacturerSpecificData)
 
             if (protocol is BluetoothGattCallback) {
-                Log.i("BluetoothScanResultCallback", "Connecting with device ${device.name}")
-                device.connectGatt(this@BluetoothPairActivity, false, protocol)
+                Log.i("BluetoothScanResultCallback", "Connecting with device ${bluetoothDevice.name}")
+                bluetoothDevice.connectGatt(this@BluetoothPairActivity, false, protocol)
             } else {
-                Log.e("BluetoothScanResultCallback", "Unable to connect with device ${device.name}")
+                Log.e("BluetoothScanResultCallback", "Unable to connect with device ${bluetoothDevice.name}")
             }
         }
     }
