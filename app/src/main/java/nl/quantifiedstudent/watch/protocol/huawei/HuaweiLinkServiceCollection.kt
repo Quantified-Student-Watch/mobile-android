@@ -10,5 +10,4 @@ class HuaweiLinkServiceCollection(
     inline fun <reified TService : HuaweiLinkService> getService(): TService {
         return services.firstOrNull { service -> service is TService } as TService
     }
-
 }
