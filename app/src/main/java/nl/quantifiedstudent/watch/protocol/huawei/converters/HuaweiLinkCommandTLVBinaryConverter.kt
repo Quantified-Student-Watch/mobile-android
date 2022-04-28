@@ -1,16 +1,17 @@
 package nl.quantifiedstudent.watch.protocol.huawei.converters
 
 import nl.quantifiedstudent.watch.binary.BinaryConverter
-import nl.quantifiedstudent.watch.binary.VarInt
+import nl.quantifiedstudent.watch.binary.getVarUInt
+import nl.quantifiedstudent.watch.binary.putVarUInt
 import nl.quantifiedstudent.watch.protocol.huawei.HuaweiLinkCommandTLV
 import java.nio.ByteBuffer
 
 class HuaweiLinkCommandTLVBinaryConverter : BinaryConverter<HuaweiLinkCommandTLV>() {
     override fun read(clazz: Class<HuaweiLinkCommandTLV>, buffer: ByteBuffer): HuaweiLinkCommandTLV {
         val tag = buffer.get()
-        val length = VarInt.getVarInt(buffer)
+        val length = buffer.getVarUInt()
 
-        val data = ByteArray(length)
+        val data = ByteArray(length.toInt())
         buffer.get(data)
 
         return HuaweiLinkCommandTLV(tag, data)
@@ -21,7 +22,7 @@ class HuaweiLinkCommandTLVBinaryConverter : BinaryConverter<HuaweiLinkCommandTLV
 
         val data = value.value
 
-        VarInt.putVarInt(data.count(), buffer)
+        buffer.putVarUInt(data.count().toUInt())
         buffer.put(data)
     }
 }
