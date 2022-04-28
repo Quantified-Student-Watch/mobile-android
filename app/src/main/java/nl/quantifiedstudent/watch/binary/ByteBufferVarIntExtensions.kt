@@ -24,11 +24,12 @@ fun ByteBuffer.getVarUInt(): UInt {
 fun ByteBuffer.putVarUInt(value: UInt) {
     var currentValue = value
 
-    repeat(5) {
+    for (index in 0 until 5) {
         val maskedValue = currentValue.and(0x7fU).toInt()
         currentValue = currentValue.shr(7)
         if (currentValue == 0U) {
             put(maskedValue.toByte())
+            break
         } else {
             put(maskedValue.or(0x80).toByte())
         }
