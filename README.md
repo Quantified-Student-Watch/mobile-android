@@ -35,7 +35,7 @@ Please note that it is possible to skip this compatibility check for development
 ### Development environment
 
 The recommended IDE for Android development is [Android Studio](https://developer.android.com/studio).
-Android Studio contains all the nescessary tools and frameworks to get started quickly and efficiently.
+Android Studio contains all the necessary tools and frameworks to get started quickly and efficiently.
 
 ### Cloning
 
